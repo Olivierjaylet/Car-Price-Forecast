@@ -1,22 +1,23 @@
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import LabelEncoder
+import os
+import random
+
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+
+import torch
+from torchvision import transforms
+
+from torch.utils.data import Dataset
+from PIL import Image
+
+from scipy.stats import zscore
 
 
 """
 Car price prediction project library
 ----------------------------------------------------------
-
-Updates history : 
-----------------------------------------------------------
-1.0 : Creation of the preprocess_Ad_Table_Trim class
-
-1.1 : [preprocess_Ad_Table_Trim] Normalize the name of some columns in the initialization
-
-1.2 : Creation of the preprocess_Images class. Contains only a function to merge Price_table and Images_table so far
-
-1.3 : [preprocess_Ad_Table_Trim] Creation of a function to remove the outliers (to be done)
 
 """
 
@@ -26,7 +27,8 @@ Updates history :
 
 class preprocess_Ad_Table_Trim():
   """
-  Class to preprocess the data of Ad_Table and Trim  
+  Class to preprocess the data of Ad_Table and Trim 
+  ------------------------------------------------------------------------------------
   """
 
   def __init__(self, Ad_table, Trim):
@@ -36,7 +38,7 @@ class preprocess_Ad_Table_Trim():
                                         'Bodytype' : 'Body_type',
                                           'Gearbox' : 'Gear_box'})
     self.df = self.clean_obj_and_NaN()
-    self.df = self.encoding()
+    #self.df = self.encoding()
     self.Trim = Trim
     self.merged_df = self.Merge_Ad_Trim()
 
@@ -44,6 +46,18 @@ class preprocess_Ad_Table_Trim():
 
     """
     Function to fulfill Na's and transform object into numerical data
+    --------
+
+    Inputs
+    --------
+    Self
+
+    Outputs
+    --------
+    pd.core.frame.DataFrame
+
+
+    ------------------------------------------------------------------------------------
     """
 
     df_ = self.df
@@ -79,29 +93,94 @@ class preprocess_Ad_Table_Trim():
     return df_
 
 
-  def encoding(self):
+  def encoding(self, df_, one_hot_encoder):
 
-    #df_ = self.clean_obj_and_NaN()
+    """
+    Function to encode the categorical data
+    --------
 
-    df_ = self.df
+    Inputs
+    --------
+    Self
 
-    # Step 3 : Encode categorical data
+    Outputs
+    --------
+    pd.core.frame.DataFrame
 
-    # Define categorical variables to encode
-    categorical_var = ['Body_type', 
-                       'Gear_box', 
-                       'Fuel_type', 
-                       'Seat_num', 
-                       'Door_num']
 
-    for column in range(len(categorical_var)):
-      label_encoder = LabelEncoder()
-      df_[categorical_var[column]] = label_encoder.fit_transform(df_[categorical_var[column]])
+    ------------------------------------------------------------------------------------
+    """
+
+    df_ = df_.copy()
+
+
+    if one_hot_encoder==True : 
+        # Step 3 : Encode categorical data
+
+        # Define categorical variables to encode
+        categorical_var = ['Body_type', 
+                          'Gear_box', 
+                          'Fuel_type', 
+                          'Seat_num', 
+                          'Door_num']
+
+        for column in range(len(categorical_var)):
+          label_encoder = LabelEncoder()
+          df_[categorical_var[column]] = label_encoder.fit_transform(df_[categorical_var[column]])
+
+
+
+        # One Hot encoding
+        var_one_hot_encoding = [
+                        'Body_type',
+                        'Gear_box',
+                        'Fuel_type'
+                        ]
+        
+        df_ = pd.get_dummies(df_, columns=var_one_hot_encoding)
+
+    else :
+      categorical_var = ['Body_type', 
+                          'Gear_box', 
+                          'Fuel_type', 
+                          'Seat_num', 
+                          'Door_num',
+                          'Body_type',
+                        'Gear_box',
+                        'Fuel_type']
+
+      for column in range(len(categorical_var)):
+        label_encoder = LabelEncoder()
+        df_[categorical_var[column]] = label_encoder.fit_transform(df_[categorical_var[column]])
+
+
 
     return df_
 
 
   def Merge_Ad_Trim(self):
+
+    """
+    Function to merge both Ad_table and Trim tables.
+
+    Comments 
+    --------
+    Key : Genmodel_ID
+    Method : Left
+    --------
+
+    Inputs
+    --------
+    Self
+
+    Outputs
+    --------
+    pd.core.frame.DataFrame
+
+
+    ------------------------------------------------------------------------------------
+    """
+
 
     Trim = self.Trim
 
@@ -114,14 +193,34 @@ class preprocess_Ad_Table_Trim():
     df_ = df_.merge(Trim, on='Genmodel_ID', how='left')
 
     return df_
+  
 
   def select_columns(self,
                      df_,
                      columns_to_drop=[],
                      columns_to_keep=[]):
     """
-    Select columns to keep for the output. Run before droping Na's
+    Select columns to keep for the output. 
+
+    Comments
+    --------
+    Run before droping Na's
+
+    Inputs
+    --------
+    df_ : pd.core.DataFrame
+    columns_to_drop : list
+    columns_to_keep : list
+
+
+    Outputs
+    --------
+    pd.core.frame.DataFrame
+
+
+    ------------------------------------------------------------------------------------
     """
+ 
 
 
     if len(columns_to_drop) != 0:
@@ -138,23 +237,33 @@ class preprocess_Ad_Table_Trim():
 
     return df_
   
-  """
-  to be done 
-  
-  def Remove_outliers(self):
-    
-    return df_
-  """
 
   def get_full_data(self,
                     drop_nan = False,
                     columns_to_drop = [],
-                    columns_to_keep = []):
+                    columns_to_keep = [], 
+                    one_hot_encoder=False):
     """
     Function to prepare the output as a dataframe for descriptive statistics.
-    """
 
-    df_ = self.select_columns(self.merged_df, 
+    Inputs
+    --------
+    drop_nan : Boolean
+    columns_to_drop : list
+    columns_to_keep : list
+    one_hot_encoder : Boolean
+
+
+    Outputs
+    --------
+    pd.core.frame.DataFrame
+
+
+    ------------------------------------------------------------------------------------
+    """
+    df_ = self.encoding(self.merged_df, one_hot_encoder)
+
+    df_ = self.select_columns(df_, 
                               columns_to_drop, 
                               columns_to_keep)
 
@@ -178,23 +287,82 @@ class preprocess_Ad_Table_Trim():
                                   'Reg_year',
                                   'Annual_Tax',
                                   'Color'],
-                columns_to_keep = []):
+                columns_to_keep = [],
+                standardization = True,
+                remove_outliers = True,
+                one_hot_encoder = True):
 
     """
     Function to prepare the data to be trained.
-    Can chose the Columns to drop
-    """
 
-    df_ = self.select_columns(self.merged_df, 
+    Comments
+    --------
+    A list of columns_to_drop is defined by default
+
+    Inputs
+    --------
+    columns_to_drop : list
+    columns_to_keep : list
+    standardization : Boolean
+    one_hot_encoder : Boolean
+
+
+
+    Outputs
+    --------
+    pd.core.frame.DataFrame (x2)
+
+
+    ------------------------------------------------------------------------------------
+    """
+ 
+
+    df_ = self.encoding(self.merged_df, one_hot_encoder)
+
+    df_ = self.select_columns(df_, 
                               columns_to_drop)
 
     df_ = df_.dropna()
+
+    if remove_outliers == True:
+
+      percentile_99 = df_["Price"].quantile(0.99)
+      df_ = df_[df_["Price"] <= percentile_99]
+
+      z_scores = zscore(df_[['Runned_Miles', 'Engin_size', 'Price', 'Engine_power', 'Wheelbase',
+                                        'Height', 'Width', 'Length', 'Average_mpg', 'Top_speed']])
+
+      df_ = df_[(abs(z_scores) < 4).all(axis=1)]
+
+    else : 
+      pass
 
     y = df_['Price']
 
     X = df_.drop(columns = 'Price')
 
-    return y, X
+    if standardization==True :
+
+      scaler = StandardScaler()
+      columns_to_standardize = ["Runned_Miles", 
+                                "Engin_size", 
+                                "Engine_power", 
+                                "Wheelbase", 
+                                "Height",	
+                                "Width",	
+                                "Length",	
+                                "Average_mpg",	
+                                "Top_speed", 
+                                "Gas_emission",
+                                "Seat_num",	
+                                "Door_num"]
+      
+      X[columns_to_standardize] = scaler.fit_transform(X[columns_to_standardize])
+
+      return y, X
+    
+    else :
+      return y, X
   
 
 
@@ -205,76 +373,110 @@ class preprocess_Ad_Table_Trim():
 
 
 
-class preprocess_Images():
-  """
-  Class to preprocess the car Images
-  Each image should have a price label
-  """
 
 
 
-  def __init__(self, 
-               Price_table, 
-               Images_table):
+
+
+
+
+
+
+
+
+
+class DVMdataset(Dataset):
     
-    self.Price_table = Price_table
-    
-    self.Images_table = Images_table[Images_table["Predicted_viewpoint"]==0]
+    """
+    Class to preprocess and load images
+    --------
 
-  def merge_Price_table_to_Images_table(self):
+    ------------------------------------------------------------------------------------
+    """
+    def __init__(self, data, img_dir, transforms=True):
+
+        df = data
+        self.img_dir = img_dir
+
+        self.brand = df['Maker'].values
+
+        self.model_year = df['Year'].values
+
+        self.model = df['Genmodel'].values
+
+        self.Price = df['Entry_price'].values
+
+        self.transform = transforms
+
+        self.liste_images = self.unpack_all_images()
+
+    def unpack_all_images(self):
+        """
+        function to unpack all images
+        --------
+
+        ------------------------------------------------------------------------------------
+        """
+      
+        self.liste_images =[]
+        self.price_images = []
+
+        for index in range(self.brand.shape[0]):
+
+            dir_path = os.listdir(os.path.join(self.img_dir, 
+                                               self.img_dir, 
+                                               self.brand[index], 
+                                               str(self.model_year[index])))
+
+            brand_name = self.brand[index]
+
+            model_name = self.model[index]
+
+            dico = [brand_name, model_name]
+            separator = '$$'
+
+            joindre = separator.join(dico)
+
+            for i in range(len(dir_path)):
+              joindre2 = ''
+              for y in range(len(joindre)):
+                joindre2 = joindre2 + dir_path[i][y]
+              if joindre2 == joindre:
+                lien = os.path.join(self.img_dir, self.img_dir, self.brand[index], str(self.model_year[index]), dir_path[i])
+                img = Image.open(lien)
+                
+                self.liste_images.append(img)
+                self.price_images.append(self.Price[index])
+        return self.liste_images
+
+
+    def __getitem__(self, index):
       """
-      Function to give a price to each image URL
+      Function to get an image
+
+      Comments
+      --------
+
+      Inputs
+      --------
+      index : int
+
+      Outputs
+      --------
+      image and price
+
+      ------------------------------------------------------------------------------------
       """
+ 
 
-      Price_table = self.Price_table
+      if self.transform is not None : 
+        image = self.transform(self.liste_images[index])
+        return image, self.price_images[index]
 
-      Images_table = self.Images_table
+      else :
+        resize_transorm = transforms.Compose([transforms.Resize(size=(224,224))])
+        image = resize_transorm(self.liste_images[index])
+        return image, self.price_images[index]
 
-      # We want to create a link between both tables, so we can merge them
-      # The idea is to create a common key for both tables.
-      # the price will be give to an image if all those variables are the same :
-          # Maker -> Genmodel -> Year -> Genmodel_ID
-      
-      # So the Key (or Image_link) is Maker$$Genmodel$$Year$$Genmodel
-
-      # data to be concatenated to create the Image_link
-      concatenate = ['Maker', 
-                     'Genmodel', 
-                     'Year', 
-                     'Genmodel_ID']
-      
-      # Create the Image_link on Price_table
-      Price_table['Image_link'] = Price_table[concatenate].apply(lambda x: '$$'.join(map(str, x)), axis=1)
-
-      # Compute the average Entry_price for all rows with the same Image_link
-      Price_table = pd.DataFrame(Price_table.groupby(["Image_link", 
-                                                      'Genmodel', 
-                                                      'Year', 
-                                                      'Maker'])
-                                                      ['Entry_price'].mean())
-      
-      Price_table.reset_index(inplace=True)
-
-
-      # Split the Image_name of Images_table (it contains too many informations. For example, the color is unknown in Price_table)
-      split_Image_name = Images_table['Image_name'].str.rsplit('$',n=8,  expand=True)
-      
-      # Structure the Image_link with necessary data
-      Images_table['Image_link'] = split_Image_name.iloc[:,0] + '$$' + split_Image_name.iloc[:,4]
-
-
-      # Merge both tables with Image_link as a key
-      self.merged_images_prices = pd.merge(Images_table, 
-                                           Price_table, 
-                                           on='Image_link', 
-                                           how='inner')
-      
-      # Drop useless informations for the next steps
-      self.merged_images_prices.drop(columns=["Image_link", 
-                                              'Quality_check', 
-                                              'Image_ID', 
-                                              'Predicted_viewpoint'], inplace=True)
-      
-      return self.merged_images_prices
-  
-
+    def __len__(self):
+        return len(self.liste_images)
