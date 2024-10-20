@@ -1,0 +1,388 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{tablefootnote}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{tabularx}
+\usepackage{placeins}
+\usepackage{subcaption}
+
+\geometry{a4paper, margin=1in}
+
+\usepackage[style=authoryear,backend=biber,hyperref=true,citestyle=authoryear-comp]{biblatex}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+\addbibresource{references.bib}
+\geometry{letterpaper, margin = 2 cm}
+\usepackage{subcaption}
+
+\begin{document}
+
+
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} 
+
+\thispagestyle{empty}
+
+\begin{center}
+
+\includegraphics[width=0.45\textwidth]{amse_logo.png}\\
+\vspace{0.5cm}
+\textsc{\huge Aix Marseille School of Economics} \\[0.3cm]
+
+\vspace{2cm}
+
+
+\textsc{\LARGE Final Evaluation in the courses of}\\[0.4cm]
+\textsc{\large Predictive Methods}\\[0.1cm]
+\textsc{\large Machine \& Statistical Learning,} \\[0.1cm]
+\textsc{\large Information Reduction Methods}
+
+
+\vspace{1cm}
+
+
+\HRule \\[0.4cm]
+{ \huge \textbf{Car Price Prediction} \\[0.5cm] 
+Development of a mixed machine learning model to predict car prices
+}\\[0.4cm]
+\HRule \\[3cm]
+
+
+\begin{minipage}[t]{0.8\textwidth}
+	\begin{itemize}
+    \item[\emph{Authors:}] Honorine DESILLES, \\
+    Olivier JAYLET, \\
+    Marcel PENDA 
+    \item[\emph{Program:}] M.Sc. Econometrics, Big Data and statistics
+	\item[\emph{Professors:}] Pierre MICHEL, \\ Sullivan HUE
+	\item[\emph{Submission:}] \today
+	\end{itemize}
+\end{minipage}
+
+
+
+
+\end{center}
+\newpage
+
+\renewcommand{\contentsname}{Table of contents}\tableofcontents
+
+\newpage
+
+
+\section{Introduction}
+Current economic, social and environmental challenges raise many questions regarding the future of transportation. Particularly in industrialized countries, trends and new concepts such as sharing economy, circular economy or the general transition towards decarbonization drive societal thoughts and behaviour. In many countries individual transportation, and thus the automotive industry continue to constitute a crucial economic pillar (\cite{huang2023dvmcar}). However, while European car exports to China and the USA are still increasing, the sales volume for \textit{second hand} cars is much larger in most countries. For instance, generating twice the volume than the new automobile market, the second hand car market represents the largest retail sector in the US economy (\cite{Celik2019}). \\
+
+
+\noindent Due to these trends and challenges, fast and accurate car price assessments are crucial for both, sellers and buyers. Fluctuations in car preferences, and thus supply and demand make it important to sell quickly and calculate the ideal price. Online marketplaces such as AutoScout, leboncoin or ebay aim to facilitate this process of matching sellers and buyers of used cars. So far, however, only few researchers addressed this question using sophisticated machine learning methods and large data. One reason for this might be that accurately estimating car prices depends on various factors and characteristics. This makes it often difficult for laypersons but also professionals to adequately value and exchange cars at the right price. This might be even more challenging when viewing and assessing the car online and/or only based on few information \cite{Bilen2021}. \cite{Pudaruth2014} shows that some factors such as a car's age, model, mileage or horsepower already may predict it's price to some extent but predicting an \textit{accurate} resale value remains difficult. Thus, data driven price evaluation based on more complex machine learning algorithms may be a fast, efficient and convenient method for the task at hand.\\
+
+\noindent The existing literature on price prediction for used cars shows different empirical approaches. For instance, \cite{Pudaruth2014} compared a multiple linear regression, a k-nearest neighbours (KNN), and a decision tree model using car data from Mauritius. According to him, more sophisticated methods such as neural networks or concatenated models might be a good approach to increase the accuracy of car price predictions. Similarly, \cite{chen2017comparative} trained a linear regression and random forest model on a dataset of 100,000 used cars in China. Their findings suggest to apply more complex models with a large number of variables to find a better model fit. This is in line with \cite{Samruddhi2020} who present another KNN model with a prediction accuracy of 85\% but also propose advanced machine learning methods for better car price predictions. That said, \cite{Karakoç2020} fitted artificial neural networks (ANN) based on a small data set of 1,000 observations, obtaining a model accuracy of 91\% but arguing that a larger database would improve their results. Among their tree based models, \cite{Gajera2021} find the random forest and XGBoost to provide the best predictions with accuracy rates of 93\% and 92\% respectively. \footnote{Regarding the error metric, the researchers obtain a root mean squared error (RMSE) of 3,702.34 and 3,980.77 respectively.} Comparing a support vector machine (SVM) and ANN model, \cite{Bilen2021} finds that the ANN surpasses the SVM with a model accuracy of 89\%. A different approach was chosen by \cite{yang2018ai} who trained convolutional neural networks (CNN) on a rather small sample of 1,400 car \textit{images} to predict the corresponding price. Their best test set results show an accuracy of 98\%. Besides applying their model to help in product design, they propose to extend its application to used car sales where "[...] prices must be evaluated quickly but are difficult to determine." In 2021, due to the mentioned sparse data, \cite{huang2023dvmcar} created a new large-scale automotive dataset including image data for visual applications. This database constitutes the main database for this elaboration and will be further presented in the section two. \\
+
+\noindent Given the above mentioned findings and following the repeatedly mentioned recommendations for further research of fitting \textit{more complex} models on \textit{larger data}, this elaboration aims at estimating and comparing some of the most promising algorithms using the extensive DVM-Car data set provided by \cite{huang2023dvmcar}. To do so, we will first present the database and outline our empirical strategy, i.e. provide a comprehensive explanation of all machine learning algorithms and methods used. In a next step, we will present the results of our exploratory as well as predictive analysis. More concretely, the exploratory analysis contains the descriptive statistics of our data and the applied preprocessing steps. For our predictive analysis, we will explain the application and tuning of the introduced models and methods and subsequently interpret as well as compare their prediction results. \\
+
+\noindent What you found (highlight of your key results: \\
+\noindent To be written in the end when all the models were interpret!
+
+
+\section{Materials and Methods}
+In this section, we will present the database and variables used for our empirical study as well as provide a comprehensive explanation of all machine learning algorithms applied to generate our car price predictions. Moreover, we will present all methods such as information reduction and model-agnostic methods which we applied in the course of our empirical study.
+
+\subsection{Data}
+\noindent The database being complex and containing a large amount of data, a big part of our coding work has been to manage this database. The first part was to understand how it was structured, the second part to figure out which data would we use and finally the processing of this huge number of observations was technically complicated.
+
+\noindent The DVM-Car dataset is structured in different table, which can all be linked to each others. Both main parts are the \textit{Table data} and the \textit{Image data} (see Figure~\ref{table:DVM-Car Dataset}). 
+
+
+
+\noindent The \textit{Table data} part contains five CSV table. One of these table allows to access to images thanks to an URL that we can build. The others contains different information (see Figure~\ref{table:List of tables}). 
+Then, images data are stored in a ZIP file. 
+All of these data are accessible in the website: 
+
+
+
+\noindent In the end, we decided to keep the tables \textit{Ad\table} and \textit{Trim} for categorical and numerical data. For images we developed a class to access the images through a link build from the table \textit{Price} and \textit{Image}.
+\noindent In the next two parts, we will explain our data choices and strategies. 
+
+\subsubsection{Categorical and numerical data}
+\noindent In order to create a dataset comprising the numerical and categorical data, we have decided to merge two databases made available to us, as indicated in the 'voir papier'.\\
+
+\noindent The first table is named Ad table. It is a dataset that includes 268,255 observations and 24 variables. These variables describe the characteristics of vehicles such as size, color, price, model, etc. These data can be categorical, such as the car manufacturer, model, or gearbox type. There are also numerical data such as engine power and price. Many missing data are present in this table, notably in the columns colors, annual tax, average mpg, or top speed. We will explain in the next section, named preprocessing, how we handled these missing data. Additionally, outliers have been identified in this table, which may be due to poorly entered data or the presence of unique car models very different from others. These anomalies will be thoroughly examined in the preprocessing of the data.\\
+
+\noindent The second table is named Trim.csv. This table consists of 335,562 observations and 9 variables. We only have the variable indicating the gas emissions of the cars.\\
+
+\noindent Following the merging of these two tables, we obtained a final table of 213K observations before preprocessing. The objective of our work is to predict the price of cars, and our dependent variable will be the 'price' variable.\\
+
+\noindent Here is the dictionary of variables that we have selected for our final dataset.\\
+
+
+\noindent Before turning to our predicitve analysis, it was necessary to preprocess our data such that it can be feed to the introduced models.
+
+\noindent In order to carry out preprecessing in a uniform and structured way, we have opted to use object-oriented programming (OOP). This is a method of creating classes to create and manipulate objects, in this case observations. This class, called preprocess Ad Table Trim, enabled efficient and optimized preprocessing (to be seen). First, we renamed the columns of the merged table to have standardized column names so as to have the same structure for all variables. Then, after an analysis of the missing values, we decided to delete them, considering our already very large and complete database. For some variables, such as "average mpg", "engine size", "engine power" and "top speed", we decided to impute the missing values by the specific average for each type of model. We made this choice because there were many missing values in these variables, which we felt were very important in our database. \\
+
+\noindent Next, we converted all categorical data into numerical format using the "one hot encoding" function, which creates binary variables, making it easier to integrate this information into machine learning models. After identifying outliers (show some calculations or graphs), we removed the 1\% highest prices and data with zscores greater than 4. Scoring is a calculation (put calculation) that assigns a score to values that appear to be outliers. This step led to the removal of around 10K observations, representing x\% of our initial database. (see for the number of NaNs deleted).\\
+
+\noindent Finally, the last step was the standardization (calculation) of the values, an essential step in machine learning. It allows us to have data on a common scale, making them comparable. \\
+
+\noindent Thanks to the creation of this automated class, we obtain a class that ensures the creation of a coherent data set, ready to be exploited for training machine learning models. \\
+
+
+
+\subsubsection{Image Data}
+
+EXPLAIN THE URL HERE
+
+
+Le fichier ZIP contient 1 451 784 images de voiture. Elles ont déjà été retravaillé par les créateurs de la base de données. Les backgrounds sont tous blanc, les images sont bien recentrées, et surtout, la position de la voiture a été prédite. Cette prédiction est disponible dans la table Images. C’est une information importante, car nous commencerons par essayer de prédire les prix des voitures qui ont été prise de face.
+
+
+\noindent Nous avions pour projet de concaténer le modèle CNN aux données numériques. Cependant, nous avons passé beaucoup de temps à essayer de preprocess les images en créant les liens via \textit{Ad} et \textit{Trim}. Pour des raisons techniques, cette méthode n'a pas abouti et c'est pourquoi nous avons ensuite décidé d'utiliser seulement \textit{Price}. Cette table contient un prix par modèle de voiture et par année. En la liant à la table \textit{Image}, nous avons pu obtenir un nombre assez conséquent d'image labellisé par des prix, pour réentrainer un modèle CNN
+
+\begin{itemize}
+    \item \textit{unpack all images} : itère chaque donnée de notre dataframe et va trouver en navigant dans les folders du fichier ZIP l'image associée. Une fois que cette image est trouvée (si elle l'est), le prix de la donnée lui est attribuée. 
+
+    \item \textit{getitem} : returns an image with a certain transformation strategy, and with its index. It is a necessary element to use pytorch dataloaders, and it also allowed us to print our images in an easy way.
+    
+    \item \textit{len} : returns the number of images in our dataset.
+\end{itemize}
+
+\noindent Regarding the image data, the data reprocessing turned out to be highly technical....
+\noindent Le data preprocessing de ces données s'est trouvé être très technique. Comme pour le premier preprocessing, nous avons créé une classe dans le fichier \textit{library.py} ayant pour nom \textit{DVMdataset}. 
+
+\noindent Avant tout, les tables \textit{Image} et \textit{Price} sont concaténé de manière à ce que chaque donnée dans \textit{Image} ait un prix. C'est le dataframe des deux tables concaténé qui sera l'input de la classe. \noindent Notre classe comporte trois méthodes. 
+
+
+\subsection{Machine Learning Algorithms and Methods}
+Before turning to the results, this section will present our empirical strategy by introducing the machine learning algorithms and methods used. Put differently, we will explain and present our model selection by consulting academic literature as well as outline our approach and the python library used to estimate and tune these models.
+
+\subsubsection{K-Nearest-Neighbours (KNN)}
+Since \cite{Samruddhi2020} proved to obtain promising results by fitting a KNN model for car price prediction, we decided apply this approach to our larger dataset. The K-nearest neighbors algorithm is a supervised, non-parametric algorithm. In other words, it does not take a predefined function, but builds on the data. It can be applied to classification or regression problems. In our case, to determine car prices, we'll use the KNeihborsRegresors class from the scikit-learn package. 
+The aim of this algorithm is to predict the value of an observation by averaging the values of the k nearest neighbors. Typically, the distance used for this algorithm is the Euclidean distance (computation), which measures the distance between two points in feature space. The major challenge of this algorithm is to find the optimal k parameter, which minimizes the error rate by taking into account the number of neighbors that can predict a value y, representing the average of these neighbors and being the closest to the initial value to be predicted.
+
+\subsubsection{Extreme Gradient Boosting (XGBoost)}
+First introduced by \cite{Chen2016}, The Extreme Gradient Boosting algorithm mainly gained popularity for its impressive performance in data science competitions. Generally speaking, XGBoost represents an extension of the Gradient Boosting algorithm proposed by \cite{Friedman2001} but comes with some additional advantages. Besides allowing for parallel computing and built-in capabilities such as sparsity-aware split finding (accounting for missing data), XGBoost offers more hyperparameters which  automatically account for overfitting (\cite{Chen2016}). Although these advantages make the XGBoost a very powerful method it comes with some throwbacks. Due to its complexity, the XGBoost is considered a hardly to interpret black box model. However, since our task is mainly of predictive nature the model's performance and convenience is the main argument for our choice. To fit the model on the categorical and numerical data only little prepocessing, namely category encoding, is required. Moreover, previous studies such as \cite{Gajera2021} have shown promising results using XGBoost to predict car prices. 
+
+Similar to Gradient Boosting (GB), XGBoost fits a regression tree based on so-called pseudo residuals calculated from previous prediction errors $\delta_{t} = y - \hat{y}_{t}$. \footnote{For the first iteration, XGBoost starts from an initial prediction value $\hat{y}_{0}$ which is by default set to $0.5$ in the XGBoost library.} In contrast, XGBoost decides upon the best split by computing a measurement of similarity gain for each possible candidate split. This measurement quantifies the improvement in similarity of the pseudo residuals in each node after splitting the parent node into two child nodes. It includes a regularization parameter $\lambda$ scaling the similarity scores to control for nodes containing only few observations.\footnote{Otherwise, nodes with only few observations (pseudo residuals) would have misleadingly higher gain measures, indicating a good decision rule. Setting $\lambda > 0$ will reduce all gain measures inversely proportional to the number of observations per node.} Additionally, the XGBoost includes an automatic 
+
+For pruning, XGBoost algorithm includes 
+
+Moreover, the XGBoost algorithm includes the pruning parameter $\gamma$. 
+
+concretely, we only keep those branches (binary splits) that exceed a minimum threshold in similarity gain denoted by hyperparameter $\gamma$
+
+
+At each iteration, the candidate split $(s, j)^{*}$ providing the best gain in similarity is chosen as decision rule for the $m^{th}$ branch in the tree. 
+
+
+
+\subsubsection{Multilayer Perceptron (MLP)}
+\noindent Explain what is a neural network. Explain what are the dropout probabilities, the batch size, the learning rate, the activation functions etc...
+
+\noindent Another model that we found interesting to predict car prices is the multilayer perceptron model from the Neural networks family. 
+\noindent Developped from the perceptron model (\cite{Rosenblatt1958}), the MLP introduces multiple layers of neurons, each capable of learning different aspects of the data and therefore permitting to capture complex relationships. 
+\noindent As our categorical and numerical data are specific and their relationships and interactions might be various, building a MLP could model and capture some of these dynamics. The large DVM dataset containing a large amount of data, we should be able to train an accurate MLP model.
+\noindent The first layer of the neural network contains as many neurons as features. It is from this layer that the data are introduce onto the Neural network. Then, the flexibility of this model allows us to add as many layers with as many nodes as we want. In fact, those kind of parameters are called hyper-parameters and should be tuned with a grid search. The last layer size depends on the task we are aiming. As we want to predict prices, it is a regression task and therefore the last layer results in one node (for a classification task, we would set as many nodes as the number of classes). Another specificity of the MLP is that each neurons of a layer are connected to each neurons of the previous and following layers.
+In between each layers, a linear transformation is applyed to the data, and those linear transformations are plugged in an activation function. Those activation functions determine whether a nodes should be activated or not. It is where the non-linearities are captured, otherwise the model would not be able to capture complex relationships. To make the model learn, the backprogation is a two-step process to updates weights of the linear transformations. At first, in the forward pass, the data are passed in the network and compute the output. In the second part, the backward pass compute the gradient of the loss function with respect to each weights of the model. Then, this gradient is used to update the weights.
+
+\noindent One of the main problem of neural networks is that we can quickly have a large number of weights and the model could end up overfitting. To avoid it, we can drop some neurons to neurons links with a certain probability. This method reduce the number of weights computing the output and being updated for a certain training step. 
+
+
+\subsubsection{Convolutional Neural Network (CNN))}
+
+\noindent As we explained in the introduction, some researchers such as Yang, S. Chen, and Chou (2018) used CNN on car images to predict the prices. 
+Indeed, we will use a Convolutional Neural Network, which is part of deep learning that takes image data as inputs to train a model.
+We wanted to build our own model but it was more complicated than we thought and it would take more time and lead to worst acuracy than a model that is already built. We knew about AlexNet and Resnet that are pretrained models. AlexNet was developed by \cite{Krizhevsky2012} and was the first deep convolutional neural network applied to images. We decided to take Resnet18 introduced by \cite{Kaiming2016}, which is an amelioration of Alexnet. The particularity of this model is the residuality of the network, where the name comes from. The difference with the previous model is that the result doesn't come from only from the output but also from the difference between the input and the output as we can see in the following graph with the arrows.
+
+\noindent We opted for the ResNet18 model to maximize computational efficiency, given our limited computing resources. ResNet18 is chosen for its simplicity, consisting of only 18 layers.
+
+\noindent We will use the following graph to explain the architecture of Resnet18.
+
+
+
+\noindent First, the Resnet model takes as inputs RGB images of size 224x224 pixels. The size of the images was adjusted in the preprocessing step. Thus, the first convolution composed of 64 filters also called kernel can be applied. This convolutional layer captures low-level features within the images. Subsequently, a batch normalization is performed, it is a step that corresponds in data normalization to scale the data and facilitate the machine learning processes. Following this, we apply a first ReLU activation function to introduce non-linearity. The pooling step follows, acting as a reduction method because it reduces the size of the images, it produces low resolution images. 
+Will follow a sequence of four layers each containing two residual blocks, a total of 8 residual blocks.
+Afterward, the global average pooling is performed to reduce dimensions, to obtain a single value that represents the average value of each feature. Thus, after this step we will be in a space of 1 dimension. Then, we will reach the final output which is a single scalar value by using a fully connected layer, a linear regression which is the final layer of the Resnet model. In the context of a regression problem like in our project, we need to delete the last step which the softmax activation function that computes probabilities to belong to a specific class in the classification problem, which is unnecessary for regression problems.
+
+
+
+\subsubsection{Model Agnostic Methods}
+
+\textbf{Partial Dependence Plots}\\
+see project
+
+\textbf{Shapley Values}
+see pokemon
+
+\subsubsection{Information Reduction Methods}
+
+
+\noindent \textbf{Elastic Net}\\
+see stat book and pokemon
+
+
+
+
+
+
+\section{Results}
+\textit{\noindent A detailed section: “Materials and Methods” presenting first the data used, the ways to collect and format them; and a detailed description of the methods used in your analysis: theory elements on the models used, empirical strategy (model selection, cross validation, grid search, etc.). Do not forget to cite your sources. Note: Your work should not be a catalogue of estimation methods. It is best to limit yourself to a small number of methods, which you can present properly.}
+
+The following subsection will present our empirical results. We start by providing the exploratory analysis, i.e. some descriptive statistics. This way, we gain a better understanding of our data which will help us to better interpret our predictive results and derive the limitations of our empirical analysis.
+
+
+\subsection{Exploratory Analysis}
+
+\textbf{Descriptive Statistics}
+~~\\
+\noindent Descriptive statistics give us a better overview of our database.\\
+
+\noindent First, let's look at the numerical variables. The following frequency table shows the main descriptive stats for these variables, with the number of values, mean, standard deviation, minimum, maximum and quartiles. This gives us an idea of the distribution of these variables.\\
+
+
+\FloatBarrier
+
+\noindent Interpretation: \textit{On average, a car costs €10,589.90} \\
+
+\noindent The following graph (Figure 1) illustrates the distribution of our target variable, price. This boxplot reveals a tight distribution, indicating that most data are concentrated between €5,000 and €10,000, with little dispersion. The median, represented by the central line of the box, lies at €9,000, meaning that 50 % of the data are below this value.
+\noindent The whiskers on the graph, generally associated with extreme values, show points on the right-hand side after the right-hand whiskers, identified as outliers. Despite efforts to clean up the price variable, reducing the range of values from €100,000 to €56,000, the graph shows the persistence of numerous outliers. By choice, we have decided to retain these values, considered less aberrant than those in our initial dataset.
+\noindent This box plot shows an asymmetry in the distribution of our dependent variable.
+
+
+\noindent Next, we decided to show the relationship between each float variable and the price. This graphical representation proved useful for detecting outliers in the first instance, which we removed in the pre-processing step explained above. It can also be interesting to study the distribution of prices for each variable, in order to familiarize ourselves with the dataset we will later use to train our models. Finally, this approach allows us to identify trends between the independent variables and the dependent variable, price. For example, we can observe a positive correlation between vehicle price and engine power.
+
+
+
+\noindent We chose to use boxplots to examine the relationship between car prices and two integer variables, to make the graphs more understandable. After preprocessing, we found that there were only 4 possible values for the number of doors. Among these values, three-door cars seem less dispersed. Concerning the number of seats, an outlier persists with zero seats, probably due to an incorrect data entry. In addition, the data show very divergent behavior in terms of price depending on the number of seats. For example, models with 2, 5, 7 and 8 seats tend to have a lower price, never exceeding 30,000 euros for these models.
+
+
+
+\noindent Finally, we analyzed the qualitative data, also using boxplots. The graph on the left revealed (significant) differences in the dispersion of the data according to fuel type. The boxplots show marked variations between different fuel categories, highlighting the potential impact of this variable on vehicle price prediction. 
+The middle boxplot, associated with vehicle types, showed a similar distribution for the first seven types, while the last two types "Car Derived Van" and "Limousine" stand out clearly from the others by tending towards lower prices, probably due to a reduced amount of data. 
+Finally, the last boxplot on the right shows a trend whereby cars with automatic gearboxes tend to be more expensive than those with manual gearboxes.
+
+
+
+
+\paragraph{Price distribution of images}
+~~\\
+\noindent Etant donné que les prix et modèles que nous avons preprocess ne sont pas exactement les mêmes que pour la partie précédente, nous avons du ré-établir un choix de suppression des outliers. Comme nous pouvons le voir ci-dessous, Nous avons beaucoup d'outliers au delà de 80k euros. Pour garder un nombre conséquent d'images et pour complexifier la taxe à notre modèle CNN, nous avons décider de ne pas garder les images ayant un prix associé supérieur à 85k euros.
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Predictive Analysis: Car price prediction with classical data}
+
+\subsubsection{K-Nearest Neighbours (KNN)}
+
+Initially, we sought to optimize k, representing the number of neighbors. To determine this hyperparameter, we trained the KNN model for each k ranging from 1 to 20. By comparing the RMSE (root mean squared error) of the train set and the validation set, we selected the value of this hyperparameter. The k that minimizes the RMSE of the validation set with a score of 1667 is 4. 
+
+
+
+After selecting the model we felt performed best, we applied it to our test set to see the score on unseen data. The final score was 1719. 
+
+
+
+(PAS D'INTERPRETATION POSSIBLE)
+
+To reduce the dimensions of our model, we used the partial component analysis technique. This is an approach that reduces the dimensions of a dataset while preserving the variance of the initial data. The initial database, expressed in a high-dimensional space, will be reduced to a lower-dimensional space, which will be the space of the selected principal components. 
+
+In order to choose the number of dimensions we wanted, we created the following graph, which visualizes the variance explained by each component. With the aim of 95\% of the variance explained by our new dataset, we decided to select the first 10 components. We thus went from 33 variables to 13 principal components. 
+
+
+
+Finally, we trained the KNN model on the PCA-transformed training set and evaluated its performance on the test set.
+This enabled us to save processing time without degrading the results obtained, which are similar to the test results with the set of variables. 
+
+
+\subsubsection{Extreme Gradient Boosting (XGBoost)}
+To apply the XGBoost algorithm to our data, we first estimated a intital XGBoost model to determine the the optimum number of estimators for an inital learning rate $\eta$ using cross validation. This way, we reduce the computational power necessary to conduct an extensive grid search on various prameter combinations and follow an approach of iteratively fine tuning our hyperparameters. To obtain the optimal number of estimators (XGB trees), we train our baseline XGBoost with the following parameters:
+
+By setting $early_stopping_rounds = 500$, we define that the regressors will continue to fit new estimators until the objective loss function did not improve anymore after 500 additional tree estimators. As we can see in Figue xy, for our initial learning rate of 0.1, our baseline XGBoost fits 593 tree estimators until the model performance stops to improve. Set to these parameters, our baseline XGBoost provides a RMSE of 2,681.00 and accuracy of 0.9768. These results are in line with the overall strengths of the algorithm. Without much fine tuning, we already obtain quite adequate prediction results.
+
+%\noindent However, to further improve our model performance, we start by tuning the maximal tree depth and minimum child weight using the GridSearchCV package from the scikit-learn library, i.e. cross validation. More concretely, we fit 22 candidate models using a four fold cross validation, i.e. 88 XGBoost models. The grid search reveals that setting the maximal tree depth to 7 and a minimal child weight to 1 marginally improves our model performance to 2,638.16 (RMSE) and an $R_^{2}$ score of 0.9788.
+
+CONTINUE HERE
+In a second step, we tune the gamma value...
+
+
+\subsubsection{Multilayer Perceptron (MLP)}
+
+\paragraph{Tuning the neural network}
+
+\noindent To tune our hyper parameters, we have decided to focus on five parameters and swap them using the library \textit{Weights and Biases} (also known as \textit{Wandb}) : the \textit{dropout probabilities}, the \textit{activation function}, the \textit{batch size}, the \textit{learning rate} and the \textit{number of epoch}. In fact, the best number of epochs has been re-selected while training our best model during the cross validation.
+
+\noindent For some hyper parameters, we set them up with a minimum and maximum value. During the run, \textit{Wandb} swap these parameters by taking a random number between bounds, following a certain distribution function. For other parameters, we chosen to set up some set of values. In this configuration, \textit{Wandb} does not draw a random value between two bounds, but a random value between different limited choices.
+
+
+\noindent The Table~\ref{table:Parameters swapped through a distribution function} presents the parameters we chosen to swap each parameters and the Table~\ref{table:Parameters swapped with limited sets} the parameters with fixed sets of possible values. 
+To avoid over fitting, the maximum learning rate was set at 0.07 and to reduce the time of computation, the maximum number of epochs is set to 15. Since we are doing a regression and trying to predict prices, the rectified linear (\textit{Relu}) activation function should be the best activation function as it predicts only positive values. Meanwhile \textit{Sigmoid} is more appropriated for classification tasks and the hyperbolic tangent (\textit{Tanh}) only for ranges between -1 and 1. However, we wanted to check if the \textit{ReLu} would actually perform better and included the three choices in the parameter swap configuration.
+\noindent For the \textit{dropout probabilities} we tried to make a mixture of possible probabilities. This method is fixed for a certain number of hidden layers. It could be optimized with an ingenious function that could randomly draw probabilities between 0 and 0,4.
+
+
+
+
+\noindent The Figure~\ref{table:Hyper parameters tuning results MLP} displays the result of \textit{Wandb} run. For thirty possible combinations of parameters drawn with our setting, we trained and evaluated the neural network with two different set of data (train and valid). Then, \textit{Wandb} shows the validation loss of each model with their respective parameter combinations. The path colour tends to a darker purple when the model had a low loss with the validation set, and to a clear yellow when it increases.
+Thanks to this plot, it is straight to see that the models with a \textit{Relu} activation function tend to have pretty nice validation losses compared to the other functions.
+We then decided to take the set of parameters with the lower validation loss to test our model with an other dataset. 
+
+
+
+
+
+
+\noindent The Table~\ref{table:Parameters of the best MLP model} stores the parameters of the model which had the lowest validation loss after the \textit{Wandb} runs. It is important to precise that the \textit{Epoch} has been chosen during the cross validation of the model, once the other parameters were tuned. We then have 33 input features which is also so size of the first layer (one node per feature). The main improve we could make at this point would be to swap the number of layers and their sizes. Those taken here were chosen in the way to reduce the size through each layers, but those aren't optimal as we didn't swap them to test the efficiency with other possible sets. We decided to keep those parameters fixed because of the complexity of the code. 
+
+
+
+\subsection{Predictive Analysis: Car price prediction with image data}
+\noindent Here, no subsubsection needed because we use only one model, correct?! YES CORRECT
+
+
+
+\section{Conclusion}
+Following the recommendations for further research of previous studies on car price prediction, this elaboration applied and compared some promising machine learning algorithms to the CAR-DVM dataset from \cite{chen2017comparative}. After explaining our model selection and introducing the used model-agnostic as well as information reduction methods, we applied these methods to numerical, categorical and image data. 
+
+\noindent We have found that model xy provided the best model performance with a RMSE value xy of and an accuracy of xy. These findings are in line with previous studies such as \cite{} and \cite{} who also suggest that more complex machine learning models....
+
+
+\noindent I started a list for Limitations and further research recommendations so we can add stuff while writing our parts and in the end combine the bullit points to a single text.
+
+\noindent Limitations:
+\begin{itemize}
+    \item Can only be applied to "normal" cars, i.e. cars that cost less than 85k €
+    \item 
+\end{itemize}
+
+
+\noindent Recommendation for further research:
+\begin{itemize}
+    \item Develop a concatenated model that combines the predicitons on cat/num data with the predictions from image data
+    \item 
+\end{itemize}
+
+
+DON'T FORGET : 
+- explain why we chose RMSE
+- padding ?
+
+
+\end{document}
